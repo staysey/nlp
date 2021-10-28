@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Stacey's dictionary</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+        integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+
+<body>
+
+    <div id="parchment" class="container ">
+        <div class="inner-cont">
+            <div class="upload-container">
+                <p>Let's create a dictionary! First select the files using the button below.</p>
+                <div class='suka'></div>
+                <div class="file-input">
+                    <input id="files" class="upload" type="file" style="visibility:hidden;" accept="text/plain"
+                        multiple /><br />
+                    <label for="files">Select files</label>
+                </div>
+
+                <div id="selectedFiles"></div><br />
+                <button class="submit-upload">Submit upload</button>
+            </div>
+            <div id="search" class="searchbar">
+
+                <input class="search_input" type="text" name="" placeholder="Search...">
+                <a href="#" class="search_icon"><i class="fas fa-search"></i></a>
+            </div>
+            <div class="buttonContainer">
+                <button class="button">View all</button>
+                <button class="words-asc">Sort(words, a)</button>
+                <button class="words-desc">Sort(words, d)</button>
+                <button class="freq-asc">Sort(freq, a)</button>
+                <button class="freq-desc">Sort(freq, d)</button>
+                <button class="add">Add</button>
+                <button id="myBtn" class="delete">Delete</button>
+                <button class="update">Update(old new)</button>
+                <button class="save">Save dictionary</button>
+                <button class="tags">Part of Speech Tags</button>
+                <button class="speech_parts">Show text with speech parts</button>
+                <button class="all_speech_parts_for_word">All speech parts for word(in text)</button>
+                <button class="all_speech_parts_out">All speech parts for word(out of context)</button>
+            </div>
+            <!-- The Modal -->
+            <div id="myModal" class="modal">
+
+                <!-- Modal content -->
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p>Are you sure you want to delete this word?</p>
+                    <button class="deleteAnyway">Delete anyway</button>
+                </div>
+
+            </div>
+            <div id="myModal2" class="modal">
+
+                <!-- Modal content -->
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <pre>
+                    1.	CC	Coordinating conjunction
+                    2.	CD	Cardinal number
+                    3.	DT	Determiner
+                    4.	EX	Existential there
+                    5.	FW	Foreign word
+                    6.	IN	Preposition or subordinating conjunction
+                    7.	JJ	Adjective
+                    8.	JJR	Adjective, comparative
+                    9.	JJS	Adjective, superlative
+                    10.	LS	List item marker
+                    11.	MD	Modal
+                    12.	NN	Noun, singular or mass
+                    13.	NNS	Noun, plural
+                    14.	NNP	Proper noun, singular
+                    15.	NNPS	Proper noun, plural
+                    16.	PDT	Predeterminer
+                    17.	POS	Possessive ending
+                    18.	PRP	Personal pronoun
+                    19.	PRP$	Possessive pronoun
+                    20.	RB	Adverb
+                    21.	RBR	Adverb, comparative
+                    22.	RBS	Adverb, superlative
+                    23.	RP	Particle
+                    24.	SYM	Symbol
+                    25.	TO	to
+                    26.	UH	Interjection
+                    27.	VB	Verb, base form
+                    28.	VBD	Verb, past tense
+                    29.	VBG	Verb, gerund or present participle
+                    30.	VBN	Verb, past participle
+                    31.	VBP	Verb, non-3rd person singular present
+                    32.	VBZ	Verb, 3rd person singular present
+                    33.	WDT	Wh-determiner
+                    34.	WP	Wh-pronoun
+                    35.	WP$	Possessive wh-pronoun
+                    36.	WRB	Wh-adverb
+                    </pre>
+                </div>
+
+            </div>
+        </div>
+        <div class="results blurred-box">
+
+        </div>
+    </div>
+
+
+
+    <script src="bundle.js"></script>
+
+
+</body>
+
+</html>
