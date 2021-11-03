@@ -236,6 +236,7 @@ const file = options.file || DEFAULT_FILE;
 let filesArr = [];
 
 const validWord = new RegExp(/[0-9\/#!$%\^&\*;{}=\_`~()]+/ig);
+const validWord2 = new RegExp(/[0-9\/#!,.$%\^&\*;:{}=\_`~()]+/ig);
 const trailingSymbol = /[.,!:=;?"]$/g;
 const updateReg = /\s[.,?]*bno[.,?]*\s/g;
 var pattern = /^([^0-9]*)$/;
@@ -402,29 +403,14 @@ speech_parts.addEventListener('click', async () => {
 		var p = document.createElement('p');
 		p.style.cssText = 'margin-right: 3px';
 		p.className='text';
-		var text = document.createTextNode(res[i].value + ' ');
+		var text;
+		if(!validWord2.test(res[i].value))
+		text = document.createTextNode(res[i].value +  '_(' + res[i].pos  + ')_ ');
+		else text = document.createTextNode(res[i].value + ' ');
 		speechParts[i] = res[i].pos;
 		p.appendChild(text);
 		
 		 results_container.appendChild(p);
-	}
-
-
-	let elems = results_container.children;
-
-
-	for (let i=0; i<elems.length; i++) {
-
-		elems[i].addEventListener('mouseover', async (e) => {
-			elems[i].style.color = 'yellow';
-			elems[i].className = 'text';
-			elems[i].setAttribute('data-content', speechParts[i]);
-		})
-		elems[i].addEventListener('mouseout', async () => {
-			elems[i].style.color = 'black';
-			elems[i].setAttribute('data-content', '');
-		})
-		
 	}
     
     
