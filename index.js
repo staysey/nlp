@@ -404,11 +404,21 @@ speech_parts.addEventListener('click', async () => {
 		p.style.cssText = 'margin-right: 3px';
 		p.className='text';
 		var text;
-		if(!validWord2.test(res[i].value))
-		text = document.createTextNode(res[i].value +  '_(' + res[i].pos  + ')_ ');
-		else text = document.createTextNode(res[i].value + ' ');
-		speechParts[i] = res[i].pos;
+		var input = document.createElement('input');
+		input.type = "text";
+		if(!validWord2.test(res[i].value)){
+			text = document.createTextNode(res[i].value);
+			input.value = '_(' + res[i].pos  + ')_ ';
+			input.style.cssText='width: 100px';
+			p.appendChild(text);
+			p.appendChild(input);
+
+		}
+		else {text = document.createTextNode(res[i].value + ' ');
 		p.appendChild(text);
+	}
+		speechParts[i] = res[i].pos;
+		
 		
 		 results_container.appendChild(p);
 	}
