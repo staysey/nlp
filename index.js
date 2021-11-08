@@ -3,6 +3,9 @@
 
 const posTagger = require('wink-pos-tagger');
 
+import {lemmatizer} from "lemmatizer";
+
+let changeTag = [];
 import {brill} from 'brill';
 window.brill = brill;
 
@@ -16,6 +19,8 @@ class Node {
 		this.isLeaf = false;
 		this.frequency = 0;
 		this.part = 'none';
+		this.lemma="none";
+		this.lemmapart="none";
 	}
 }
 
@@ -47,7 +52,20 @@ class SuggestTree {
 		//	const { partOfSpeech, definitions } = response[0].meanings[ind];
 		//	pointer.part = partOfSpeech;
    // }) 
-       pointer.part  = tagger.tagSentence(word)[0].pos;
+       pointer.lemmapart  = tagger.tagSentence(lemmatizer(word))[0].pos;
+	   let wordPos = [];
+	    wordPos=brill[word];
+		var allPos = '';
+		if(wordPos) {
+		for(let i=0; i<wordPos.length; i++){
+          allPos += wordPos[i] + ', ';
+		}
+		allPos = allPos.replace(/,\s*$/, "");
+		pointer.part  = allPos;
+	}
+	else 
+		pointer.part  = tagger.tagSentence(word)[0].pos;
+		pointer.lemma = lemmatizer(word);
 		pointer = this.root;
 	}
 
@@ -62,7 +80,19 @@ class SuggestTree {
 		pointer.isLeaf = true;
 
 		pointer.frequency=0;
-		pointer.part  = tagger.tagSentence(word)[0].pos;
+		pointer.lemmapart  = tagger.tagSentence(lemmatizer(word))[0].pos;
+		let wordPos = [];
+		wordPos=brill[word];
+			var allPos = '';
+			if(wordPos) {
+			for(let i=0; i<wordPos.length; i++){
+			  allPos += wordPos[i] + ', ';
+			}
+			allPos = allPos.replace(/,\s*$/, "");
+			pointer.part  = allPos;
+		}
+			else pointer.part  = tagger.tagSentence(word)[0].pos;
+			pointer.lemma = lemmatizer(word);
 		pointer = this.root;
 	}
 
@@ -77,10 +107,40 @@ class SuggestTree {
 		pointer.isLeaf = true;
 
 		pointer.frequency = fr;
-		pointer.part  = tagger.tagSentence(word)[0].pos;
+		pointer.lemmapart  = tagger.tagSentence(lemmatizer(word))[0].pos;
+		let wordPos = [];
+		wordPos=brill[word];
+			var allPos = '';
+			if(wordPos) {
+			for(let i=0; i<wordPos.length; i++){
+			  allPos += wordPos[i] + ', ';
+			}
+			allPos = allPos.replace(/,\s*$/, "");
+			pointer.part  = allPos;
+		}
+			
+			else pointer.part  = tagger.tagSentence(word)[0].pos;
+			pointer.lemma = lemmatizer(word);
 		pointer = this.root;
 	}
 	
+	async addOldNode2(word, fr, baseTag, allTags){
+		let pointer = this.root;
+		for (let i = 0; i < word.length; i++) {
+			if (!pointer.children[word[i]]) {
+				pointer.children[word[i]] = new Node(word[i]);
+			}
+			pointer = pointer.children[word[i]];
+		}
+		pointer.isLeaf = true;
+
+		pointer.frequency = fr;
+		pointer.lemmapart  = baseTag;
+		pointer.part  = allTags;
+		pointer.lemma = lemmatizer(word);
+		pointer = this.root;
+	}
+
 	getDictionary(){
 		const results = [];
 
@@ -96,7 +156,7 @@ class SuggestTree {
 
 			if(node.isLeaf){
 				let word = path.join("");
-				results.push({ word: word, frequency: node.frequency, part: node.part })
+				results.push({ word: word, frequency: node.frequency, part: node.part, lemma: node.lemma, lemmapart: node.lemmapart })
 			};
 			
 			Object.keys(node.children).forEach(key => {
@@ -134,6 +194,62 @@ class SuggestTree {
 		}(this.root, [], 0));
 
 		results.addOldNode(newWord, freq);
+		return results;
+	}
+
+	updateAllTags(wordToUpdate, newTags){
+		const results = new SuggestTree();
+		let freq = 0;
+
+		(function traverse(node, path, length) {
+
+			if(!node){
+				return
+			};
+
+			if(node.value){
+				path[length++] = node.value;
+			}
+
+			if(node.isLeaf){
+				let word = path.join("");
+				if(wordToUpdate === word) results.addOldNode2(word, node.frequency, node.lemmapart, newTags);
+				if(wordToUpdate !== word)  results.addOldNode2(word, node.frequency, node.lemmapart, node.part);
+			};
+			
+			Object.keys(node.children).forEach(key => {
+				traverse(node.children[key], path.slice(), length);
+			});
+		}(this.root, [], 0));
+
+		return results;
+	}
+
+	updateBaseTag(wordToUpdate, newBaseTag){
+		const results = new SuggestTree();
+		let freq = 0;
+
+		(function traverse(node, path, length) {
+
+			if(!node){
+				return
+			};
+
+			if(node.value){
+				path[length++] = node.value;
+			}
+
+			if(node.isLeaf){
+				let word = path.join("");
+				if(wordToUpdate === word) results.addOldNode2(word, node.frequency, newBaseTag, node.part);
+				if(wordToUpdate !== word)  results.addOldNode2(word, node.frequency, node.lemmapart, node.part);
+			};
+			
+			Object.keys(node.children).forEach(key => {
+				traverse(node.children[key], path.slice(), length);
+			});
+		}(this.root, [], 0));
+
 		return results;
 	}
 
@@ -194,7 +310,7 @@ class SuggestTree {
 
 			if(node.isLeaf){
 				let word = prefix + path.join("");
-				results.push({ word: word, frequency: node.frequency, part: node.part })
+				results.push({ word: word, frequency: node.frequency, part: node.part, lemma: node.lemma, lemmapart: node.lemmapart })
 			};
 			
 			Object.keys(node.children).forEach(key => {
@@ -392,6 +508,7 @@ all_speech_parts_for_word.addEventListener('click', async () => {
 });
 
 let speechParts = [];
+let all_word_s = [];
 
 speech_parts.addEventListener('click', async () => {
 	while (results_container.firstChild) {
@@ -408,21 +525,41 @@ speech_parts.addEventListener('click', async () => {
 		input.type = "text";
 		if(!validWord2.test(res[i].value)){
 			text = document.createTextNode(res[i].value);
-			input.value = '_(' + res[i].pos  + ')_ ';
+			let val = '';
+			for(let J=0; J<changeTag.length; J++){
+				if(changeTag[J][0].toString().trim().toLowerCase() === res[i].value.toString().trim().toLowerCase()
+				 && changeTag[J][1] === speechParts[i]) {
+					val = changeTag[J][2];
+					changeTag[J][0] = ',';
+					break;
+				}
+		  }
+		  if(val) input.value = val;
+			else input.value = '_(' + res[i].pos  + ')_ ';
+			input.className='input_value';
 			input.style.cssText='width: 100px';
 			p.appendChild(text);
 			p.appendChild(input);
-
+			speechParts[i] = res[i].pos;
+			all_word_s[i] = res[i].value;
 		}
 		else {text = document.createTextNode(res[i].value + ' ');
 		p.appendChild(text);
-	}
-		speechParts[i] = res[i].pos;
-		
-		
+	    }
+	   
 		 results_container.appendChild(p);
 	}
-    
+    var child = document.getElementsByClassName('input_value');
+	for(let i=0; i<child.length; i++) {
+		child[i].addEventListener('change', async (e) => {
+			var data = document.getElementsByClassName('input_value')[i].value;
+			let res=[];
+			res[0] = all_word_s[i];
+			res[1] = speechParts[i];
+			res[2] = data;
+			changeTag.push(res);
+		})
+	}
     
 });
 
@@ -439,28 +576,80 @@ freq_asc.addEventListener('click', async () => {
         results_container.removeChild(results_container.firstChild);
     }
 	var table = document.createElement('table');
+	var tr2 = document.createElement('tr');  
+		var te = document.createTextNode('word');
+		var th = document.createElement('th');
+		var te2 = document.createTextNode('frequency');
+		var th2 = document.createElement('th');
+		var te3 = document.createTextNode('tags');
+		var th3 = document.createElement('th');
+		var te4 = document.createTextNode('base form');
+		var th4 = document.createElement('th');
+		var te5 = document.createTextNode('base form tag');
+		var th5 = document.createElement('th');
+		th.appendChild(te);
+		tr2.appendChild(th);
+		th2.appendChild(te2);
+		tr2.appendChild(th2);
+		th3.appendChild(te3);
+		tr2.appendChild(th3);
+		th4.appendChild(te4);
+		tr2.appendChild(th4);
+		th5.appendChild(te5);
+		tr2.appendChild(th5);
+		table.appendChild(tr2);
     arr.map((el) => {
-        var tr = document.createElement('tr');   
+        var tr = document.createElement('tr');  
         var td1 = document.createElement('td');
 		td1.style.width = '150px';
         var td2 = document.createElement('td');
 		td2.style.width = '100px';
 		var td3 = document.createElement('td');
+		td3.style.width = '150px';
+		var td4 = document.createElement('td');
+		td4.style.width = '150px';
+		var td5 = document.createElement('td');
    
-        var text1 = document.createTextNode(el.word);
+		var text1 = document.createTextNode(el.word);
         var text2 = document.createTextNode(el.frequency);
-		var text3 = document.createTextNode(el.part);
+		var input1 = document.createElement('input');
+		input1.className = 'input1';
+		input1.type = "text";
+		input1.value = el.part;
+		var text4 = document.createTextNode(el.lemma);
+		var input2 = document.createElement('input');
+		input2.className = 'input2';
+		input2.type = "text";
+		input2.value = el.lemmapart;
    
         td1.appendChild(text1);
         td2.appendChild(text2);
-		td3.appendChild(text3);
+		td3.appendChild(input1);
+		td4.appendChild(text4);
+		td5.appendChild(input2);
    
         tr.appendChild(td1);
          tr.appendChild(td2);
 		 tr.appendChild(td3);
+		 tr.appendChild(td4);
+		 tr.appendChild(td5);
+
         table.appendChild(tr);
     })
 	results_container.appendChild(table);
+	var trs = table.children;
+	for (let j=0; j<trs.length; j++) {
+		let tds = trs[j].children;
+		for (let i=0; i<tds.length; i++) {
+			tds[i].addEventListener('change', async (e) => {
+				var data = tds[i].children[0].value;
+				let newArr = [];
+				if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
+				suggestTree = newArr;
+			})
+	   }
+	}
 });
 
 freq_desc.addEventListener('click', async () => {
@@ -475,28 +664,80 @@ freq_desc.addEventListener('click', async () => {
         results_container.removeChild(results_container.firstChild);
     }
 	var table = document.createElement('table');
+	var tr2 = document.createElement('tr');  
+		var te = document.createTextNode('word');
+		var th = document.createElement('th');
+		var te2 = document.createTextNode('frequency');
+		var th2 = document.createElement('th');
+		var te3 = document.createTextNode('tags');
+		var th3 = document.createElement('th');
+		var te4 = document.createTextNode('base form');
+		var th4 = document.createElement('th');
+		var te5 = document.createTextNode('base form tag');
+		var th5 = document.createElement('th');
+		th.appendChild(te);
+		tr2.appendChild(th);
+		th2.appendChild(te2);
+		tr2.appendChild(th2);
+		th3.appendChild(te3);
+		tr2.appendChild(th3);
+		th4.appendChild(te4);
+		tr2.appendChild(th4);
+		th5.appendChild(te5);
+		tr2.appendChild(th5);
+		table.appendChild(tr2);
     arr.map((el) => {
-        var tr = document.createElement('tr');   
+        var tr = document.createElement('tr');  
         var td1 = document.createElement('td');
 		td1.style.width = '150px';
-		var td2 = document.createElement('td');
+        var td2 = document.createElement('td');
 		td2.style.width = '100px';
 		var td3 = document.createElement('td');
+		td3.style.width = '150px';
+		var td4 = document.createElement('td');
+		td4.style.width = '150px';
+		var td5 = document.createElement('td');
    
-        var text1 = document.createTextNode(el.word);
+		var text1 = document.createTextNode(el.word);
         var text2 = document.createTextNode(el.frequency);
-		var text3 = document.createTextNode(el.part);
+		var input1 = document.createElement('input');
+		input1.className = 'input1';
+		input1.type = "text";
+		input1.value = el.part;
+		var text4 = document.createTextNode(el.lemma);
+		var input2 = document.createElement('input');
+		input2.className = 'input2';
+		input2.type = "text";
+		input2.value = el.lemmapart;
    
         td1.appendChild(text1);
         td2.appendChild(text2);
-		td3.appendChild(text3);
+		td3.appendChild(input1);
+		td4.appendChild(text4);
+		td5.appendChild(input2);
    
         tr.appendChild(td1);
          tr.appendChild(td2);
 		 tr.appendChild(td3);
-		 table.appendChild(tr);
+		 tr.appendChild(td4);
+		 tr.appendChild(td5);
+
+        table.appendChild(tr);
     })
 	results_container.appendChild(table);
+	var trs = table.children;
+	for (let j=0; j<trs.length; j++) {
+		let tds = trs[j].children;
+		for (let i=0; i<tds.length; i++) {
+			tds[i].addEventListener('change', async (e) => {
+				var data = tds[i].children[0].value;
+				let newArr = [];
+				if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
+				suggestTree = newArr;
+			})
+	   }
+	}
 });
 
 words_asc.addEventListener('click', async () => {
@@ -511,28 +752,80 @@ words_asc.addEventListener('click', async () => {
         results_container.removeChild(results_container.firstChild);
     }
 	var table = document.createElement('table');
+	var tr2 = document.createElement('tr');  
+		var te = document.createTextNode('word');
+		var th = document.createElement('th');
+		var te2 = document.createTextNode('frequency');
+		var th2 = document.createElement('th');
+		var te3 = document.createTextNode('tags');
+		var th3 = document.createElement('th');
+		var te4 = document.createTextNode('base form');
+		var th4 = document.createElement('th');
+		var te5 = document.createTextNode('base form tag');
+		var th5 = document.createElement('th');
+		th.appendChild(te);
+		tr2.appendChild(th);
+		th2.appendChild(te2);
+		tr2.appendChild(th2);
+		th3.appendChild(te3);
+		tr2.appendChild(th3);
+		th4.appendChild(te4);
+		tr2.appendChild(th4);
+		th5.appendChild(te5);
+		tr2.appendChild(th5);
+		table.appendChild(tr2);
     arr.map((el) => {
-        var tr = document.createElement('tr');   
+        var tr = document.createElement('tr');  
         var td1 = document.createElement('td');
 		td1.style.width = '150px';
         var td2 = document.createElement('td');
 		td2.style.width = '100px';
 		var td3 = document.createElement('td');
+		td3.style.width = '150px';
+		var td4 = document.createElement('td');
+		td4.style.width = '150px';
+		var td5 = document.createElement('td');
    
-        var text1 = document.createTextNode(el.word);
+		var text1 = document.createTextNode(el.word);
         var text2 = document.createTextNode(el.frequency);
-		var text3 = document.createTextNode(el.part);
+		var input1 = document.createElement('input');
+		input1.className = 'input1';
+		input1.type = "text";
+		input1.value = el.part;
+		var text4 = document.createTextNode(el.lemma);
+		var input2 = document.createElement('input');
+		input2.className = 'input2';
+		input2.type = "text";
+		input2.value = el.lemmapart;
    
-		td1.appendChild(text1);
+        td1.appendChild(text1);
         td2.appendChild(text2);
-		td3.appendChild(text3);
+		td3.appendChild(input1);
+		td4.appendChild(text4);
+		td5.appendChild(input2);
    
         tr.appendChild(td1);
          tr.appendChild(td2);
 		 tr.appendChild(td3);
+		 tr.appendChild(td4);
+		 tr.appendChild(td5);
+
         table.appendChild(tr);
     })
 	results_container.appendChild(table);
+	var trs = table.children;
+	for (let j=0; j<trs.length; j++) {
+		let tds = trs[j].children;
+		for (let i=0; i<tds.length; i++) {
+			tds[i].addEventListener('change', async (e) => {
+				var data = tds[i].children[0].value;
+				let newArr = [];
+				if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
+				suggestTree = newArr;
+			})
+	   }
+	}
 });
 
 
@@ -548,28 +841,80 @@ words_desc.addEventListener('click', async () => {
         results_container.removeChild(results_container.firstChild);
     }
 	var table = document.createElement('table');
+	var tr2 = document.createElement('tr');  
+		var te = document.createTextNode('word');
+		var th = document.createElement('th');
+		var te2 = document.createTextNode('frequency');
+		var th2 = document.createElement('th');
+		var te3 = document.createTextNode('tags');
+		var th3 = document.createElement('th');
+		var te4 = document.createTextNode('base form');
+		var th4 = document.createElement('th');
+		var te5 = document.createTextNode('base form tag');
+		var th5 = document.createElement('th');
+		th.appendChild(te);
+		tr2.appendChild(th);
+		th2.appendChild(te2);
+		tr2.appendChild(th2);
+		th3.appendChild(te3);
+		tr2.appendChild(th3);
+		th4.appendChild(te4);
+		tr2.appendChild(th4);
+		th5.appendChild(te5);
+		tr2.appendChild(th5);
+		table.appendChild(tr2);
     arr.map((el) => {
-        var tr = document.createElement('tr');   
+        var tr = document.createElement('tr');  
         var td1 = document.createElement('td');
 		td1.style.width = '150px';
         var td2 = document.createElement('td');
 		td2.style.width = '100px';
 		var td3 = document.createElement('td');
+		td3.style.width = '150px';
+		var td4 = document.createElement('td');
+		td4.style.width = '150px';
+		var td5 = document.createElement('td');
    
-        var text1 = document.createTextNode(el.word);
+		var text1 = document.createTextNode(el.word);
         var text2 = document.createTextNode(el.frequency);
-		var text3 = document.createTextNode(el.part);
+		var input1 = document.createElement('input');
+		input1.className = 'input1';
+		input1.type = "text";
+		input1.value = el.part;
+		var text4 = document.createTextNode(el.lemma);
+		var input2 = document.createElement('input');
+		input2.className = 'input2';
+		input2.type = "text";
+		input2.value = el.lemmapart;
    
-		td1.appendChild(text1);
+        td1.appendChild(text1);
         td2.appendChild(text2);
-		td3.appendChild(text3);
-   
+		td3.appendChild(input1);
+		td4.appendChild(text4);
+		td5.appendChild(input2);
+
         tr.appendChild(td1);
          tr.appendChild(td2);
 		 tr.appendChild(td3);
+		 tr.appendChild(td4);
+		 tr.appendChild(td5);
+
         table.appendChild(tr);
     })
 	results_container.appendChild(table);
+	var trs = table.children;
+	for (let j=0; j<trs.length; j++) {
+		let tds = trs[j].children;
+		for (let i=0; i<tds.length; i++) {
+			tds[i].addEventListener('change', async (e) => {
+				var data = tds[i].children[0].value;
+				let newArr = [];
+				if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
+				suggestTree = newArr;
+			})
+	   }
+	}
 });
 
 button.addEventListener('click', async () => {
@@ -578,28 +923,80 @@ button.addEventListener('click', async () => {
         results_container.removeChild(results_container.firstChild);
     }
 	var table = document.createElement('table');
+	var tr2 = document.createElement('tr');  
+		var te = document.createTextNode('word');
+		var th = document.createElement('th');
+		var te2 = document.createTextNode('frequency');
+		var th2 = document.createElement('th');
+		var te3 = document.createTextNode('tags');
+		var th3 = document.createElement('th');
+		var te4 = document.createTextNode('base form');
+		var th4 = document.createElement('th');
+		var te5 = document.createTextNode('base form tag');
+		var th5 = document.createElement('th');
+		th.appendChild(te);
+		tr2.appendChild(th);
+		th2.appendChild(te2);
+		tr2.appendChild(th2);
+		th3.appendChild(te3);
+		tr2.appendChild(th3);
+		th4.appendChild(te4);
+		tr2.appendChild(th4);
+		th5.appendChild(te5);
+		tr2.appendChild(th5);
+		table.appendChild(tr2);
     arr.map((el) => {
-        var tr = document.createElement('tr');   
+        var tr = document.createElement('tr');  
         var td1 = document.createElement('td');
 		td1.style.width = '150px';
         var td2 = document.createElement('td');
 		td2.style.width = '100px';
 		var td3 = document.createElement('td');
+		td3.style.width = '150px';
+		var td4 = document.createElement('td');
+		td4.style.width = '150px';
+		var td5 = document.createElement('td');
    
         var text1 = document.createTextNode(el.word);
         var text2 = document.createTextNode(el.frequency);
-		var text3 = document.createTextNode(el.part);
+		var input1 = document.createElement('input');
+		input1.className = 'input1';
+		input1.type = "text";
+		input1.value = el.part;
+		var text4 = document.createTextNode(el.lemma);
+		var input2 = document.createElement('input');
+		input2.className = 'input2';
+		input2.type = "text";
+		input2.value = el.lemmapart;
    
         td1.appendChild(text1);
         td2.appendChild(text2);
-		td3.appendChild(text3);
+		td3.appendChild(input1);
+		td4.appendChild(text4);
+		td5.appendChild(input2);
    
         tr.appendChild(td1);
          tr.appendChild(td2);
 		 tr.appendChild(td3);
+		 tr.appendChild(td4);
+		 tr.appendChild(td5);
+
         table.appendChild(tr);
     })
 	results_container.appendChild(table);
+	var trs = table.children;
+	for (let j=0; j<trs.length; j++) {
+		let tds = trs[j].children;
+		for (let i=0; i<tds.length; i++) {
+			tds[i].addEventListener('change', async (e) => {
+				var data = tds[i].children[0].value;
+				let newArr = [];
+				if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
+				suggestTree = newArr;
+			})
+	   }
+	}
 });
 
 search.addEventListener('click', async () => {
@@ -609,30 +1006,80 @@ while (results_container.firstChild) {
     results_container.removeChild(results_container.firstChild);
 }
 var table = document.createElement('table');
+	var tr2 = document.createElement('tr');  
+		var te = document.createTextNode('word');
+		var th = document.createElement('th');
+		var te2 = document.createTextNode('frequency');
+		var th2 = document.createElement('th');
+		var te3 = document.createTextNode('tags');
+		var th3 = document.createElement('th');
+		var te4 = document.createTextNode('base form');
+		var th4 = document.createElement('th');
+		var te5 = document.createTextNode('base form tag');
+		var th5 = document.createElement('th');
+		th.appendChild(te);
+		tr2.appendChild(th);
+		th2.appendChild(te2);
+		tr2.appendChild(th2);
+		th3.appendChild(te3);
+		tr2.appendChild(th3);
+		th4.appendChild(te4);
+		tr2.appendChild(th4);
+		th5.appendChild(te5);
+		tr2.appendChild(th5);
+		table.appendChild(tr2);
     arr.map((el) => {
-		var tr = document.createElement('tr');   
+        var tr = document.createElement('tr');  
         var td1 = document.createElement('td');
 		td1.style.width = '150px';
         var td2 = document.createElement('td');
 		td2.style.width = '100px';
 		var td3 = document.createElement('td');
+		td3.style.width = '150px';
+		var td4 = document.createElement('td');
+		td4.style.width = '150px';
+		var td5 = document.createElement('td');
    
         var text1 = document.createTextNode(el.word);
         var text2 = document.createTextNode(el.frequency);
-		var text3 = document.createTextNode(el.part);
+		var input1 = document.createElement('input');
+		input1.className = 'input1';
+		input1.type = "text";
+		input1.value = el.part;
+		var text4 = document.createTextNode(el.lemma);
+		var input2 = document.createElement('input');
+		input2.className = 'input2';
+		input2.type = "text";
+		input2.value = el.lemmapart;
    
         td1.appendChild(text1);
         td2.appendChild(text2);
-		td3.appendChild(text3);
+		td3.appendChild(input1);
+		td4.appendChild(text4);
+		td5.appendChild(input2);
    
         tr.appendChild(td1);
          tr.appendChild(td2);
 		 tr.appendChild(td3);
+		 tr.appendChild(td4);
+		 tr.appendChild(td5);
 
         table.appendChild(tr);
-    
     })
 	results_container.appendChild(table);
+	var trs = table.children;
+	for (let j=0; j<trs.length; j++) {
+		let tds = trs[j].children;
+		for (let i=0; i<tds.length; i++) {
+			tds[i].addEventListener('change', async (e) => {
+				var data = tds[i].children[0].value;
+				let newArr = [];
+				if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
+				suggestTree = newArr;
+			})
+	   }
+	}
 });
 
 add.addEventListener('click', async () => {

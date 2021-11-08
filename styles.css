@@ -7,10 +7,17 @@
   content: "hi"
 }
 
+TD, TH {
+  padding: 3px; /* Поля вокруг содержимого таблицы */
+  border: 1px solid black; /* Параметры рамки */
+ }
+ TH {
+  background: #b0e0e6; /* Цвет фона */
+ }
 
 .buttonContainer {
   position: absolute;
-  right: 5%;
+  right: -30%;
   top: 70px;
   display: flex;
   flex-direction: column;
