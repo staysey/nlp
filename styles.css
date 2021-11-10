@@ -25,12 +25,34 @@ TD, TH {
   display: none;
 }
 
+.input1, .input2, .input3 {
+  width: 150px;
+  word-break: break-all;
+}
+
+.inner_table{
+  margin-left: 150px;
+}
+
+.title {
+  font-weight: 800;
+}
+.ga {
+  display: flex;
+}
+
 .upload-container {
   margin-top: 70px;
   display: flex;
   justify-content: center;
   flex-direction: column;
   align-items: center;
+}
+
+table {
+  display: block;
+  height: 800px;
+  overflow-y: auto;
 }
 
 @import url('https://fonts.googleapis.com/css?family=Pirata+One|Bilbo+Swash+Caps&display=swap');
