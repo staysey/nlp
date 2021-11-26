@@ -149,7 +149,11 @@ main {
         text-decoration:none;
         }
 
-        .button, .words-asc, .words-desc, .freq-asc, .freq-desc, .add, .delete, .update, .save, .speech_parts, .all_speech_parts_for_word, .all_speech_parts_out, .tags{
+        .button, .words-asc, .words-desc, .freq-asc, .freq-desc, .add, .delete, 
+        .update, .save, .speech_parts, .all_speech_parts_for_word, .all_speech_parts_out, .tags, .speech_part_freq,
+        .pos_pairs, .pos_pairs_freq, .pos_pairs_f, .pos_pairs_s,
+        .pos_pairs_freq_d, .pos_pairs_f_d, .pos_pairs_s_d,
+        .pos_pairs_search, .pos_pairs_search_f, .pos_pairs_search_s{
             margin-top: 30px;
             height: 40px;
             margin-left: 10px;
