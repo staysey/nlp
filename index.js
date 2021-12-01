@@ -9,6 +9,7 @@ import {lemmatizer} from "lemmatizer";
 
 let changeTag = [];
 import {brill} from 'brill';
+import { findLastIndex } from './javascript-lemmatizer-master/underscore/underscore.js';
 window.brill = brill;
 
 var tagger = posTagger();
@@ -661,7 +662,13 @@ pos_pairs_search.addEventListener('click', async () => {
         if (final[i].first === arr[0] && final[i].second === arr[1])
 		final2.push(final[i]);
 	}
-print_pairs(final2);
+	if(final2.length===0) 
+	final2.push({
+		first: arr[0],
+		second: arr[1],
+		count: 0,
+	})
+    print_pairs(final2);
 });
 
 
@@ -673,6 +680,12 @@ pos_pairs_search_f.addEventListener('click', async () => {
         if (final[i].first === data )
 		final2.push(final[i]);
 	}
+	if(final2.length===0) 
+	final2.push({
+		first: data,
+		second: '',
+		count: 0,
+	})
 print_pairs(final2);
 });
 
@@ -685,6 +698,12 @@ pos_pairs_search_s.addEventListener('click', async () => {
         if (final[i].second === data )
 		final2.push(final[i]);
 	}
+	if(final2.length===0) 
+	final2.push({
+		first: data,
+		second: '',
+		count: 0,
+	})
 print_pairs(final2);
 });
 
@@ -992,17 +1011,25 @@ speech_part_freq.addEventListener('click', async () => {
 
 	var table = document.createElement('table');
 	var tr2 = document.createElement('tr');  
-		var te = document.createTextNode('speech part');
+		var te = document.createTextNode('speech part(click to sort)'); //add sort
+		te.className='cursor';
 		var th = document.createElement('th');
-		var te2 = document.createTextNode('frequency');
+		var te2 = document.createTextNode('frequency(click to sort)');
+		te2.className='cursor';
 		var th2 = document.createElement('th');
 		var te3 = document.createTextNode('procent');
 		var th3 = document.createElement('th');
 
+		te.addEventListener('click', ()=> {
+			final.sort((a, b) => (a.pos > b.pos) ? 1 : -1);
+		})
+
 		th.appendChild(te);
 		tr2.appendChild(th);
+		th.className='cursor';
 		th2.appendChild(te2);
 		tr2.appendChild(th2);
+		th2.className='cursor';
 		th3.appendChild(te3);
 		tr2.appendChild(th3);
 		table.appendChild(tr2);
@@ -1033,6 +1060,103 @@ speech_part_freq.addEventListener('click', async () => {
     })
 	results_container.appendChild(table);
 
+	let sortByAlphabet = 0;
+	console.log(results_container.children[0].lastChild.children)
+	let sortByFreq = 0;
+    let oldArr = [...final];
+	results_container.firstChild.firstChild.firstChild.addEventListener('click', ()=> {
+        sortByAlphabet+=1;
+		console.log(22, sortByAlphabet)
+		while (results_container.children[0].children[1]) {
+			results_container.children[0].removeChild(results_container.children[0].lastChild);
+		}
+
+		if (sortByAlphabet === 1){
+		final.sort((a, b) => (a.pos > b.pos) ? 1 : -1);
+		}
+		if (sortByAlphabet === 2){
+			final.sort((a, b) => (a.pos > b.pos) ? -1 : 1);
+			sortByAlphabet = -1;
+		}
+		if(sortByAlphabet===0){
+			final = [...oldArr]
+		}
+
+    final.map((el) => {
+        var tr = document.createElement('tr');  
+        var td1 = document.createElement('td');
+		td1.style.width = '150px';
+        var td2 = document.createElement('td');
+		td2.style.width = '100px';
+		var td3 = document.createElement('td');
+
+        var text1 = document.createTextNode(el.pos);
+        var text2 = document.createTextNode(el.count);
+		var  c = (el.count/allCount) * 100;
+	
+		var text3 = document.createTextNode(Math.round(c * 100) / 100
+
+		+ ' %');
+	
+        td1.appendChild(text1);
+        td2.appendChild(text2);
+		td3.appendChild(text3);
+
+        tr.appendChild(td1);
+         tr.appendChild(td2);
+		 tr.appendChild(td3);
+        table.appendChild(tr);
+    })
+
+
+
+	})
+
+	results_container.firstChild.firstChild.children[1].addEventListener('click', ()=> {
+        sortByFreq+=1;
+		while (results_container.children[0].children[1]) {
+			results_container.children[0].removeChild(results_container.children[0].lastChild);
+		}
+
+		if (sortByFreq === 1){
+		final.sort((a, b) => (a.count > b.count) ? 1 : -1);
+		}
+		if (sortByFreq === 2){
+			final.sort((a, b) => (a.count > b.count) ? -1 : 1);
+			sortByFreq = -1;
+		}
+		if(sortByFreq===0){
+			final = [...oldArr]
+		}
+
+    final.map((el) => {
+        var tr = document.createElement('tr');  
+        var td1 = document.createElement('td');
+		td1.style.width = '150px';
+        var td2 = document.createElement('td');
+		td2.style.width = '100px';
+		var td3 = document.createElement('td');
+
+        var text1 = document.createTextNode(el.pos);
+        var text2 = document.createTextNode(el.count);
+		var  c = (el.count/allCount) * 100;
+	
+		var text3 = document.createTextNode(Math.round(c * 100) / 100
+
+		+ ' %');
+	
+        td1.appendChild(text1);
+        td2.appendChild(text2);
+		td3.appendChild(text3);
+
+        tr.appendChild(td1);
+         tr.appendChild(td2);
+		 tr.appendChild(td3);
+        table.appendChild(tr);
+    })
+
+
+})
 })
 
 
@@ -1217,7 +1341,28 @@ freq_asc.addEventListener('click', async () => {
 			let a = el.part.split(' ')[0].replace(/[\s.,%]/g, '')				;
 			let b = el.frequency;
 			str += a + " " + b + " ";
+			el.lemmafreq[0].pos = a;
 		}
+	
+		let newStr='';
+		let parts = el.part.replace(/[.,%]/g, '').split(' ');
+		let noparts = [];
+		let found = false;
+		let selected;
+		console.log('parts', parts, 'lemma', el.lemmafreq );
+		for(let j=0; j<parts.length; j++){
+			for(let i=0; i<el.lemmafreq.length; i++){
+				if(el.lemmafreq[i].pos === parts[j]) {
+					found = true;
+				}
+			}
+			if(found === false) noparts.push(parts[j]);
+			found = false;
+		}
+		for(let i=0; i<noparts.length; i++){
+			str+= ' ' + noparts[i] + ' 0';
+		}
+		
 		
 			var text3 = document.createTextNode(str);
 	
@@ -1412,7 +1557,28 @@ freq_desc.addEventListener('click', async () => {
 			let a = el.part.split(' ')[0].replace(/[\s.,%]/g, '')				;
 			let b = el.frequency;
 			str += a + " " + b + " ";
+			el.lemmafreq[0].pos = a;
 		}
+	
+		let newStr='';
+		let parts = el.part.replace(/[.,%]/g, '').split(' ');
+		let noparts = [];
+		let found = false;
+		let selected;
+		console.log('parts', parts, 'lemma', el.lemmafreq );
+		for(let j=0; j<parts.length; j++){
+			for(let i=0; i<el.lemmafreq.length; i++){
+				if(el.lemmafreq[i].pos === parts[j]) {
+					found = true;
+				}
+			}
+			if(found === false) noparts.push(parts[j]);
+			found = false;
+		}
+		for(let i=0; i<noparts.length; i++){
+			str+= ' ' + noparts[i] + ' 0';
+		}
+		
 		
 			var text3 = document.createTextNode(str);
 	
@@ -1607,7 +1773,28 @@ words_asc.addEventListener('click', async () => {
 			let a = el.part.split(' ')[0].replace(/[\s.,%]/g, '')				;
 			let b = el.frequency;
 			str += a + " " + b + " ";
+			el.lemmafreq[0].pos = a;
 		}
+	
+		let newStr='';
+		let parts = el.part.replace(/[.,%]/g, '').split(' ');
+		let noparts = [];
+		let found = false;
+		let selected;
+		console.log('parts', parts, 'lemma', el.lemmafreq );
+		for(let j=0; j<parts.length; j++){
+			for(let i=0; i<el.lemmafreq.length; i++){
+				if(el.lemmafreq[i].pos === parts[j]) {
+					found = true;
+				}
+			}
+			if(found === false) noparts.push(parts[j]);
+			found = false;
+		}
+		for(let i=0; i<noparts.length; i++){
+			str+= ' ' + noparts[i] + ' 0';
+		}
+		
 		
 			var text3 = document.createTextNode(str);
 	
@@ -1803,7 +1990,28 @@ words_desc.addEventListener('click', async () => {
 			let a = el.part.split(' ')[0].replace(/[\s.,%]/g, '')				;
 			let b = el.frequency;
 			str += a + " " + b + " ";
+			el.lemmafreq[0].pos = a;
 		}
+	
+		let newStr='';
+		let parts = el.part.replace(/[.,%]/g, '').split(' ');
+		let noparts = [];
+		let found = false;
+		let selected;
+		console.log('parts', parts, 'lemma', el.lemmafreq );
+		for(let j=0; j<parts.length; j++){
+			for(let i=0; i<el.lemmafreq.length; i++){
+				if(el.lemmafreq[i].pos === parts[j]) {
+					found = true;
+				}
+			}
+			if(found === false) noparts.push(parts[j]);
+			found = false;
+		}
+		for(let i=0; i<noparts.length; i++){
+			str+= ' ' + noparts[i] + ' 0';
+		}
+		
 		
 			var text3 = document.createTextNode(str);
 	
@@ -1992,6 +2200,26 @@ button.addEventListener('click', async () => {
 		let a = el.part.split(' ')[0].replace(/[\s.,%]/g, '')				;
 		let b = el.frequency;
 		str += a + " " + b + " ";
+		el.lemmafreq[0].pos = a;
+	}
+
+	let newStr='';
+	let parts = el.part.replace(/[.,%]/g, '').split(' ');
+	let noparts = [];
+	let found = false;
+	let selected;
+	console.log('parts', parts, 'lemma', el.lemmafreq );
+    for(let j=0; j<parts.length; j++){
+		for(let i=0; i<el.lemmafreq.length; i++){
+			if(el.lemmafreq[i].pos === parts[j]) {
+				found = true;
+			}
+		}
+		if(found === false) noparts.push(parts[j]);
+		found = false;
+	}
+	for(let i=0; i<noparts.length; i++){
+		str+= ' ' + noparts[i] + ' 0';
 	}
 	
 		var text3 = document.createTextNode(str);
@@ -2181,7 +2409,28 @@ var tr2 = document.createElement('tr');
 		let a = el.part.split(' ')[0].replace(/[\s.,%]/g, '')				;
 		let b = el.frequency;
 		str += a + " " + b + " ";
+		el.lemmafreq[0].pos = a;
 	}
+
+	let newStr='';
+	let parts = el.part.replace(/[.,%]/g, '').split(' ');
+	let noparts = [];
+	let found = false;
+	let selected;
+	console.log('parts', parts, 'lemma', el.lemmafreq );
+    for(let j=0; j<parts.length; j++){
+		for(let i=0; i<el.lemmafreq.length; i++){
+			if(el.lemmafreq[i].pos === parts[j]) {
+				found = true;
+			}
+		}
+		if(found === false) noparts.push(parts[j]);
+		found = false;
+	}
+	for(let i=0; i<noparts.length; i++){
+		str+= ' ' + noparts[i] + ' 0';
+	}
+	
 	
 		var text3 = document.createTextNode(str);
 

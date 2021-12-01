@@ -267,3 +267,7 @@ main {
   left: 0;
   color: gray;
 }
+
+.cursor {
+  cursor: pointer;
+}
