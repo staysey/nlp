@@ -60,7 +60,7 @@ class SuggestTree {
 								 break;
 							 }
 							 else {
-								 tags += " ";
+								 tags += ", ";
 							 }
 						 }
 				   }
@@ -72,8 +72,8 @@ class SuggestTree {
 				word[i+2]==='i' &&
 				word[i+3]==='h' && word[i+4]==='i') {
 					  for (let j = i+5; j<word.length; j++){
-						  if(word[j] !== 'g' &&  word[j+1] !== 'b' && word[j+2] !== 'n' && word[j+3] !== 'v') newW += word[j];
-						  else break;
+						  if(word[j] === 'g' &&  word[j+1] === 'b' && word[j+2] === 'n' && word[j+3] === 'v') break;
+						  else newW +=word[j];
 					  }
 				}
 		    }
@@ -1388,7 +1388,6 @@ freq_asc.addEventListener('click', async () => {
 		let noparts = [];
 		let found = false;
 		let selected;
-		console.log('parts', parts, 'lemma', el.lemmafreq );
 		for(let j=0; j<parts.length; j++){
 			for(let i=0; i<el.lemmafreq.length; i++){
 				if(el.lemmafreq[i].pos === parts[j]) {
@@ -1612,7 +1611,6 @@ freq_desc.addEventListener('click', async () => {
 		let noparts = [];
 		let found = false;
 		let selected;
-		console.log('parts', parts, 'lemma', el.lemmafreq );
 		for(let j=0; j<parts.length; j++){
 			for(let i=0; i<el.lemmafreq.length; i++){
 				if(el.lemmafreq[i].pos === parts[j]) {
@@ -1836,7 +1834,6 @@ words_asc.addEventListener('click', async () => {
 		let noparts = [];
 		let found = false;
 		let selected;
-		console.log('parts', parts, 'lemma', el.lemmafreq );
 		for(let j=0; j<parts.length; j++){
 			for(let i=0; i<el.lemmafreq.length; i++){
 				if(el.lemmafreq[i].pos === parts[j]) {
@@ -2061,7 +2058,6 @@ words_desc.addEventListener('click', async () => {
 		let noparts = [];
 		let found = false;
 		let selected;
-		console.log('parts', parts, 'lemma', el.lemmafreq );
 		for(let j=0; j<parts.length; j++){
 			for(let i=0; i<el.lemmafreq.length; i++){
 				if(el.lemmafreq[i].pos === parts[j]) {
@@ -2279,7 +2275,6 @@ button.addEventListener('click', async () => {
 	let noparts = [];
 	let found = false;
 	let selected;
-	console.log('parts', parts, 'lemma', el.lemmafreq );
     for(let j=0; j<parts.length; j++){
 		for(let i=0; i<el.lemmafreq.length; i++){
 			if(el.lemmafreq[i].pos === parts[j]) {
@@ -2496,7 +2491,6 @@ var tr2 = document.createElement('tr');
 	let noparts = [];
 	let found = false;
 	let selected;
-	console.log('parts', parts, 'lemma', el.lemmafreq );
     for(let j=0; j<parts.length; j++){
 		for(let i=0; i<el.lemmafreq.length; i++){
 			if(el.lemmafreq[i].pos === parts[j]) {
