@@ -39,9 +39,46 @@ class SuggestTree {
 	
 	async add(word, lemma){
 		let newWord = false;
+		let superNew = false;
+		let tags = '';
 		if(word.includes('hgfdvbm')) {
 			word = word.substring(0, word.length-7);
 			newWord = true;
+		}
+		let end = false;
+		if(word.includes("gbnvvbhui")){
+			superNew = true;
+			let found = false;
+			for (let i=0; i<word.length; i++){
+                   if(word[i]==='h' && word[i+1]==='i' &&
+				   word[i+2]==='h' &&
+				   word[i+3]==='i') {
+                         for (let j = i+4; j<word.length; j++){
+							 if (word[j] !== 'y') tags += word[j].toUpperCase();
+							 else if (word[j] === 'y' && word[j+1] === 'h' &&  word[j+2] === 'i')  {
+								 end = true;
+								 break;
+							 }
+							 else {
+								 tags += " ";
+							 }
+						 }
+				   }
+				   if (end) break;
+			}
+			let newW = '';
+			for (let i=0; i<word.length; i++){
+				if(word[i]==='y' && word[i+1]==='h' &&
+				word[i+2]==='i' &&
+				word[i+3]==='h' && word[i+4]==='i') {
+					  for (let j = i+5; j<word.length; j++){
+						  if(word[j] !== 'g' &&  word[j+1] !== 'b' && word[j+2] !== 'n' && word[j+3] !== 'v') newW += word[j];
+						  else break;
+					  }
+				}
+		    }
+			word = newW;
+			console.log(13, tags, word);
 		}
 		let pointer = this.root;
 		for (let i = 0; i < word.length; i++) {
@@ -103,6 +140,8 @@ class SuggestTree {
 		 if(allLemmas[i][1]==='') allLemmas[i][1]=tagger.tagSentence(lemmatizer(allLemmas[i][0]))[0].pos;
 
 	}
+	if(superNew) pointer.part = tags;
+	if(superNew) pointer.frequency -=1;
 	pointer.lemma=allLemmas;
 		pointer = this.root;
 	}
@@ -1447,7 +1486,15 @@ freq_asc.addEventListener('click', async () => {
 			tds[i].addEventListener('change', async (e) => {
 				var data = tds[i].children[0].value;
 				let newArr = [];
-				if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				if(i===2) {
+					let ndata = data.replace(/[.,%]/g, '').split(' ');
+					allData += "  hihi";
+					for(let i=0; i<ndata.length; i++){
+						allData += ndata[i] + 'y';
+					}
+					allData +=  "hihi" + tds[0].textContent + "gbnvvbhui";
+					newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				}
 			//	if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
 			//	if(i===3) newArr = suggestTree.updateBaseForm(tds[0].textContent, data);
 				suggestTree = newArr;
@@ -1663,7 +1710,15 @@ freq_desc.addEventListener('click', async () => {
 			tds[i].addEventListener('change', async (e) => {
 				var data = tds[i].children[0].value;
 				let newArr = [];
-				if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				if(i===2) {
+					let ndata = data.replace(/[.,%]/g, '').split(' ');
+					allData += "  hihi";
+					for(let i=0; i<ndata.length; i++){
+						allData += ndata[i] + 'y';
+					}
+					allData +=  "hihi" + tds[0].textContent + "gbnvvbhui";
+					newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				}
 			//	if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
 			//	if(i===3) newArr = suggestTree.updateBaseForm(tds[0].textContent, data);
 				suggestTree = newArr;
@@ -1879,7 +1934,15 @@ words_asc.addEventListener('click', async () => {
 			tds[i].addEventListener('change', async (e) => {
 				var data = tds[i].children[0].value;
 				let newArr = [];
-				if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				if(i===2) {
+					let ndata = data.replace(/[.,%]/g, '').split(' ');
+					allData += "  hihi";
+					for(let i=0; i<ndata.length; i++){
+						allData += ndata[i] + 'y';
+					}
+					allData +=  "hihi" + tds[0].textContent + "gbnvvbhui";
+					newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				}
 			//	if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
 			//	if(i===3) newArr = suggestTree.updateBaseForm(tds[0].textContent, data);
 				suggestTree = newArr;
@@ -2095,7 +2158,15 @@ words_desc.addEventListener('click', async () => {
 			tds[i].addEventListener('change', async (e) => {
 				var data = tds[i].children[0].value;
 				let newArr = [];
-				if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				if(i===2) {
+					let ndata = data.replace(/[.,%]/g, '').split(' ');
+					allData += "  hihi";
+					for(let i=0; i<ndata.length; i++){
+						allData += ndata[i] + 'y';
+					}
+					allData +=  "hihi" + tds[0].textContent + "gbnvvbhui";
+					newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				}
 			//	if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
 			//	if(i===3) newArr = suggestTree.updateBaseForm(tds[0].textContent, data);
 				suggestTree = newArr;
@@ -2305,7 +2376,15 @@ button.addEventListener('click', async () => {
 			tds[i].addEventListener('change', async (e) => {
 				var data = tds[i].children[0].value;
 				let newArr = [];
-				if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				if(i===2) {
+					let ndata = data.replace(/[.,%]/g, '').split(' ');
+					allData += "  hihi";
+					for(let i=0; i<ndata.length; i++){
+						allData += ndata[i] + 'y';
+					}
+					allData +=  "hihi" + tds[0].textContent + "gbnvvbhui";
+					newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+				}
 			//	if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
 			//	if(i===3) newArr = suggestTree.updateBaseForm(tds[0].textContent, data);
 				suggestTree = newArr;
@@ -2514,7 +2593,15 @@ for (let j=0; j<trs.length; j++) {
 		tds[i].addEventListener('change', async (e) => {
 			var data = tds[i].children[0].value;
 			let newArr = [];
-			if(i===2) newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+			if(i===2) {
+				let ndata = data.replace(/[.,%]/g, '').split(' ');
+				allData += "  hihi";
+				for(let i=0; i<ndata.length; i++){
+					allData += ndata[i] + 'y';
+				}
+				allData +=  "hihi" + tds[0].textContent + "gbnvvbhui";
+				newArr = suggestTree.updateAllTags(tds[0].textContent, data);
+			}
 		//	if(i===4) newArr = suggestTree.updateBaseTag(tds[0].textContent, data);
 		//	if(i===3) newArr = suggestTree.updateBaseForm(tds[0].textContent, data);
 			suggestTree = newArr;
